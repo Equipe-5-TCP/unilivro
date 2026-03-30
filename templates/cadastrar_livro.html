@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Cadastrar Livro · UniLivro{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Cadastrar Livro</h1>
+            <p class="page-sub">Adicione um livro ao seu acervo para troca</p>
+        </div>
+        <a href="/meus-livros" class="btn-ghost">← Voltar</a>
+    </div>
+
+<div class="form-card">
+    <form onsubmit="event.preventDefault(); criarLivro(Object.fromEntries(new FormData(this)));" class="book-form">
+
+        <div class="form-section">
+            <span class="section-label">Informações</span>
+
+            <div class="field-group">
+                <label for="title">Título *</label>
+                <input type="text" id="title" name="title" placeholder="Ex: O Senhor dos Anéis" required>
+            </div>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label for="author">Autor *</label>
+                    <input type="text" id="author" name="author" placeholder="Ex: J.R.R. Tolkien" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="isbn">ISBN <span class="opt">opcional</span></label>
+                    <input type="text" id="isbn" name="isbn" placeholder="978-85-...">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <span class="section-label">Classificação</span>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label for="categoria">Categoria *</label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="" disabled selected>Selecione</option>
+
+                        <optgroup label="── Acadêmicos ──">
+                            <option>Ciências Exatas e Tecnologia</option>
+                            <option>Ciências Biológicas e Saúde</option>
+                            <option>Ciências Humanas</option>
+                            <option>Ciências Sociais Aplicadas</option>
+                            <option>Direito</option>
+                            <option>Linguagens e Artes</option>
+                            <option>Didático / Vestibular</option>
+                        </optgroup>
+
+                        <optgroup label="── Literatura ──">
+                            <option>Ficção Científica</option>
+                            <option>Fantasia / Aventura</option>
+                            <option>Romance</option>
+                            <option>Terror / Suspense</option>
+                            <option>Literatura Brasileira</option>
+                            <option>Literatura Internacional</option>
+                        </optgroup>
+
+                        <optgroup label="── Outros ──">
+                            <option>Auto-ajuda / Desenvolvimento Pessoal</option>
+                            <option>Biografia / Memórias</option>
+                            <option>História / Política</option>
+                            <option>Filosofia</option>
+                            <option>Outro</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label>Condição *</label>
+                    <div class="radio-group">
+                        <label class="radio-chip">
+                            <input type="radio" name="condicao" value="Novo" required>
+                            <span>Novo</span>
+                        </label>
+                        <label class="radio-chip">
+                            <input type="radio" name="condicao" value="Ótimo">
+                            <span>Ótimo</span>
+                        </label>
+                        <label class="radio-chip">
+                            <input type="radio" name="condicao" value="Bom">
+                            <span>Bom</span>
+                        </label>
+                        <label class="radio-chip">
+                            <input type="radio" name="condicao" value="Regular">
+                            <span>Regular</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section no-border">
+            <span class="section-label">Observações</span>
+
+            <div class="field-group">
+                <label for="descricao">Descrição <span class="opt">opcional</span></label>
+                <textarea id="descricao" name="descricao" rows="3"
+                    placeholder="Ex: Anotações a lápis, edição especial, capa levemente amassada..."></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/meus-livros" class="btn-ghost">Cancelar</a>
+            <button type="submit" class="btn-primary" id="btn-submit">
+                Cadastrar Livro
+            </button>
+        </div>
+    </form>
+</div>
+
+</div>
+
+{% endblock %}

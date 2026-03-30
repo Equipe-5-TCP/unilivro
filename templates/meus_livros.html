@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Meus Livros · UniLivro{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Meus Livros</h1>
+            <p class="page-sub" id="user-info"></p>
+        </div>
+        <a href="/cadastrar-livro" class="btn-primary">+ Adicionar Livro</a>
+    </div>
+
+<div id="books-container" class="books-grid"></div>
+
+<div id="empty-state" class="empty-state" style="display:none;">
+    <div class="empty-icon">📚</div>
+    <h2>Nenhum livro cadastrado</h2>
+    <p>Adicione seus primeiros livros e comece a fazer trocas!</p>
+    <a href="/cadastrar-livro" class="btn-primary">+ Cadastrar meu primeiro livro</a>
+</div>
+
+</div>
+
+{% endblock %}
