@@ -1,51 +1,45 @@
-# 📚 BookSwap — Troca de Livros Universitários
+# 📚 UniLivro — Troca de Livros Universitários
 
-Aplicativo web para troca de livros entre alunos de universidade.
+Aplicativo web para troca de livros entre estudantes universitários, permitindo cadastro, gerenciamento e compartilhamento de livros de forma simples e segura.
 
 ## Tecnologias
 - **Backend:** Python + Flask
-- **Banco de dados:** SQLite (arquivo local `bookswap.db`)
-- **Frontend:** HTML, CSS
+- **Banco de dados:** Firebase Firestore
+- **Autenticação:** Firebase Authentication (JWT)
+- **Frontend:** HTML, CSS e JavaScript
+- **Integração:** Firebase SDK (client + admin)
 
-## Como rodar
+## Funcionalidades
 
-### 1. Instale as dependências
-```bash
-pip install flask
-```
+- Cadastro e login de usuários
+- Autenticação segura com Firebase
+- Cadastro de livros
+- Listagem de livros do usuário
+- Pausar / reativar disponibilidade
+- Remoção de livros
+- Associação de livros ao usuário (UID)
 
-### 2. Inicie o servidor
-```bash
-python app.py
-```
-
-### 3. Acesse no navegador
-```
-http://localhost:5000
 ```
 
 ## Telas disponíveis
 
-| Tela | Rota | Descrição |
-|------|------|-----------|
-| Login | `/login` | Autenticação por e-mail e senha |
-| Cadastro | `/cadastro` | Registro de novo usuário universitário |
-| Cadastrar Livro | `/cadastrar-livro` | Adicionar livro ao acervo pessoal |
-| Meus Livros | `/meus-livros` | Ver, pausar e remover livros cadastrados |
-
-## Estrutura do projeto
-```
-bookswap/
-├── app.py              # Backend Flask + rotas + banco de dados
+unilivro/
+│
+├── app.py                  # Backend Flask + rotas API
+├── firebase_config.py      # Configuração Firebase Admin
 ├── requirements.txt
-├── bookswap.db         # Gerado automaticamente ao iniciar
+├── .gitignore
+│
 ├── static/
-│   └── css/
-│       └── style.css   # Estilos
-└── templates/
-    ├── base.html           # Layout base com navbar
-    ├── login.html
-    ├── cadastro.html
-    ├── cadastrar_livro.html
-    └── meus_livros.html
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── auth.js         # Integração com Firebase Auth + API
+│
+├── templates/
+│   ├── base.html
+│   ├── login.html
+│   ├── cadastro.html
+│   ├── cadastrar_livro.html
+│   └── meus_livros.html
 ```
