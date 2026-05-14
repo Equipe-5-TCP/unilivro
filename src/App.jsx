@@ -1,18 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 
 // ─── Firebase SDK (v8 compat via CDN já no index.html) ───────────────────────
-// Assumindo que firebase está disponível globalmente via CDN
-// Adicione no seu index.html:
-// <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-// <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-
 const firebaseConfig = {
   apiKey: "AIzaSyCV-F0BDO5RmXj3C40LqQYu7GyPz_BRX9Y",
   authDomain: "unilivro.firebaseapp.com",
   projectId: "unilivro",
 };
 
-// Inicializa firebase apenas uma vez
 let auth;
 try {
   if (!window.firebase?.apps?.length) {
@@ -112,6 +106,7 @@ const styles = `
     font-family: 'DM Sans', sans-serif;
   }
   .nav-link:hover { color: #fff; background: var(--ink-ui); }
+  .nav-link.active { color: #fff; background: var(--ink-ui); }
   .nav-link.add { color: var(--red-light); border: 1px solid rgba(184,40,40,0.35); }
   .nav-link.add:hover { background: var(--red); color: #fff; border-color: var(--red); }
   .nav-sep { width: 1px; height: 20px; background: #2a2a2a; margin: 0 0.4rem; }
@@ -134,12 +129,26 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
     padding: 0.8rem 1.75rem;
     font-size: 0.875rem;
     font-weight: 500;
     animation: slideDown 0.3s ease;
   }
+  .flash-main { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; flex: 1; min-width: 0; }
+  .flash-main > span { flex: 1; min-width: 12rem; }
+  .flash-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.4rem 0.95rem; border-radius: var(--r-sm);
+    font-size: 0.8rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+    background: var(--ink); color: #fff !important; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .flash.success .flash-link { background: var(--sage); color: #fff !important; }
+  .flash.warning .flash-link { background: var(--amber); color: #fff !important; }
+  .flash.error .flash-link { background: var(--red); color: #fff !important; }
   .flash.success { background: var(--sage-bg); color: var(--sage); border-bottom: 2px solid var(--sage); }
+  .flash.warning { background: var(--amber-bg); color: var(--amber); border-bottom: 2px solid var(--amber); }
   .flash.error   { background: #FEF0F0; color: var(--red); border-bottom: 2px solid var(--red); }
   .flash-close {
     background: none; border: none; cursor: pointer;
@@ -378,6 +387,36 @@ const styles = `
   .stat-item.avail strong { color: var(--sage); }
   .stat-sep { color: var(--border); font-size: 1.1rem; }
 
+  /* ── Filtros Explorar ── */
+  .filtros-bar {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.75rem; flex-wrap: wrap;
+  }
+  .filtros-bar input[type="text"],
+  .filtros-bar select {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.875rem;
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border);
+    background: #fff;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    width: auto;
+  }
+  .filtros-bar input[type="text"] { flex: 1; min-width: 180px; }
+  .filtros-bar input[type="text"]:focus,
+  .filtros-bar select:focus { border-color: var(--red); }
+  .btn-filtro-clear {
+    background: none; border: 1.5px solid var(--border);
+    color: var(--muted); padding: 0.55rem 0.9rem;
+    border-radius: var(--r-sm); font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-filtro-clear:hover { border-color: var(--red); color: var(--red); }
+
   /* ── Books Grid ── */
   .books-grid {
     display: grid;
@@ -408,6 +447,7 @@ const styles = `
     font-size: 0.68rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.05em;
     padding: 0.15rem 0.55rem; border-radius: 4px;
+    display: inline-block; width: fit-content;
   }
   .badge.cat   { color: var(--muted); background: var(--paper-warm); }
   .badge.on    { color: var(--sage);  background: var(--sage-bg); }
@@ -429,6 +469,12 @@ const styles = `
     display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
   }
+  .book-owner {
+    display: flex; align-items: center; gap: 0.35rem;
+    font-size: 0.78rem; color: var(--muted);
+    margin-top: 0.2rem;
+  }
+  .book-owner strong { color: var(--secondary); font-weight: 600; }
 
   .book-actions {
     display: flex; gap: 0.5rem;
@@ -448,6 +494,50 @@ const styles = `
   .btn-card.toggle:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
   .btn-card.del { color: var(--red); border-color: rgba(184,40,40,0.22); }
   .btn-card.del:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+  /* Botão Tenho Interesse */
+  .btn-card.interesse {
+    color: var(--sage); border-color: rgba(46,107,79,0.3);
+    background: var(--sage-bg); flex: 2;
+  }
+  .btn-card.interesse:hover:not(:disabled) {
+    background: var(--sage); color: #fff; border-color: var(--sage);
+    transform: translateY(-1px);
+  }
+  .btn-card.interesse:disabled {
+    opacity: 0.55; cursor: not-allowed;
+    background: var(--paper-warm); color: var(--muted);
+    border-color: var(--border);
+  }
+  .btn-card.interesse.enviado {
+    background: var(--sage-bg); color: var(--sage);
+    border-color: var(--sage); cursor: default;
+  }
+  .book-actions-stack { flex-direction: column; align-items: stretch; gap: 0.45rem; }
+  .btn-card.mailto {
+    flex: none; text-decoration: none; display: block;
+    color: var(--blue-soft); border-color: rgba(30,79,160,0.35);
+    background: var(--blue-bg); font-weight: 600;
+  }
+  .btn-card.mailto:hover { background: var(--blue-soft); color: #fff; border-color: var(--blue-soft); }
+
+  .interesses-table-wrap {
+    margin-top: 1.25rem; overflow-x: auto;
+    background: #fff; border-radius: var(--r); border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .interesses-table {
+    width: 100%; border-collapse: collapse; font-size: 0.875rem;
+  }
+  .interesses-table th, .interesses-table td {
+    padding: 0.65rem 1rem; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .interesses-table th {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); background: var(--paper-warm);
+  }
+  .interesses-table tr:last-child td { border-bottom: none; }
+  .interesses-table a { color: var(--blue-soft); font-weight: 600; }
 
   /* ── Form Card ── */
   .form-card {
@@ -527,6 +617,8 @@ const styles = `
     .form-card { padding: 1.25rem; }
     .form-actions { flex-direction: column-reverse; }
     .btn-primary, .btn-ghost { width: 100%; justify-content: center; }
+    .filtros-bar { flex-direction: column; align-items: stretch; }
+    .filtros-bar input[type="text"], .filtros-bar select { width: 100%; }
   }
 `;
 
@@ -536,32 +628,38 @@ function condClass(cond) {
   return map[cond] || "bom";
 }
 
-async function apiCall(path, options = {}) {
-  const user = auth?.currentUser;
-  const token = user ? await user.getIdToken() : localStorage.getItem("token");
-  return fetch(path, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token,
-      ...(options.headers || {}),
-    },
-  });
+/** Terceiro arg: usuário Firebase do React — evita enviar requisição antes de auth.currentUser existir. */
+async function apiCall(path, options = {}, idTokenUser) {
+  const u = idTokenUser != null ? idTokenUser : auth?.currentUser;
+  const token = u ? await u.getIdToken() : localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+  if (token) headers.Authorization = token;
+  return fetch(path, { ...options, headers });
 }
 
 // ─── Flash ────────────────────────────────────────────────────────────────────
-function Flash({ msg, type, onClose }) {
+function Flash({ msg, type, linkHref, linkLabel, onClose }) {
   if (!msg) return null;
   return (
     <div className={`flash ${type}`}>
-      <span>{msg}</span>
-      <button className="flash-close" onClick={onClose}>×</button>
+      <div className="flash-main">
+        <span>{msg}</span>
+        {linkHref ? (
+          <a className="flash-link" href={linkHref}>
+            {linkLabel || "Abrir e-mail"}
+          </a>
+        ) : null}
+      </div>
+      <button type="button" className="flash-close" onClick={onClose}>×</button>
     </div>
   );
 }
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
-function Navbar({ user, navigate }) {
+function Navbar({ user, navigate, page }) {
   const nome = user?.email?.split("@")[0];
 
   function logout() {
@@ -577,8 +675,27 @@ function Navbar({ user, navigate }) {
         <span className="nav-wordmark">Uni<em>Livro</em></span>
       </div>
       <div className="nav-links">
-        <button className="nav-link" onClick={() => navigate("meus-livros")}>Meus Livros</button>
-        <button className="nav-link add" onClick={() => navigate("cadastrar-livro")}>+ Adicionar</button>
+        <button
+          className={`nav-link ${page === "meus-livros" ? "active" : ""}`}
+          onClick={() => navigate("meus-livros")}
+        >
+          Meus Livros
+        </button>
+        <button
+          className={`nav-link ${page === "explorar" ? "active" : ""}`}
+          onClick={() => navigate("explorar")}
+        >
+          Explorar
+        </button>
+        <button
+          className={`nav-link ${page === "interesses-recebidos" ? "active" : ""}`}
+          onClick={() => navigate("interesses-recebidos")}
+        >
+          Interesses
+        </button>
+        <button className="nav-link add" onClick={() => navigate("cadastrar-livro")}>
+          + Adicionar
+        </button>
         <div className="nav-sep" />
         <span className="nav-user">{nome}</span>
         <button className="btn-logout" onClick={logout}>Sair</button>
@@ -600,7 +717,7 @@ function LoginPage({ navigate, setFlash }) {
       const token = await cred.user.getIdToken();
       localStorage.setItem("token", token);
       navigate("meus-livros");
-    } catch (err) {
+    } catch {
       setFlash({ msg: "E-mail ou senha incorretos.", type: "error" });
       setLoading(false);
     }
@@ -670,10 +787,14 @@ function CadastroPage({ navigate, setFlash }) {
       const cred = await auth.createUserWithEmailAndPassword(data.email, data.password);
       const token = await cred.user.getIdToken();
       localStorage.setItem("token", token);
-      await apiCall("/api/usuarios", {
-        method: "POST",
-        body: JSON.stringify({ name: data.name, curso: data.curso, email: data.email }),
-      });
+      await apiCall(
+        "/api/usuarios",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: data.name, curso: data.curso, email: data.email }),
+        },
+        cred.user
+      );
       navigate("meus-livros");
     } catch (err) {
       setFlash({ msg: err.message, type: "error" });
@@ -757,31 +878,50 @@ function MeusLivrosPage({ user, navigate, setFlash }) {
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiCall("/api/livros");
-      const data = await res.json();
-      setLivros(data);
+      const res = await apiCall("/api/livros", {}, user);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setLivros([]);
+        let msg = (data && data.error) || "Erro ao carregar livros.";
+        if (res.status === 401) {
+          if (data?.detail) {
+            msg = `Detalhe do servidor: ${data.detail}`;
+          } else if (data?.error === "Token ausente") {
+            msg = "Nenhum token foi enviado. Atualize a página ou entre de novo.";
+          } else {
+            msg =
+              "O backend não validou o login. Confira no terminal do Flask a linha [Firebase Admin] com project_id=unilivro. " +
+              "O arquivo firebase-key.json precisa estar na mesma pasta que app.py (baixe em Firebase Console → Contas de serviço do projeto unilivro). Reinicie o Flask após colocar a chave.";
+          }
+        }
+        setFlash({ msg, type: "error" });
+        return;
+      }
+      setLivros(Array.isArray(data) ? data : []);
     } catch {
+      setLivros([]);
       setFlash({ msg: "Erro ao carregar livros.", type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [setFlash]);
+  }, [setFlash, user]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
   async function deletar(id) {
     if (!confirm("Remover este livro?")) return;
-    await apiCall(`/api/livros/${id}`, { method: "DELETE" });
+    await apiCall(`/api/livros/${id}`, { method: "DELETE" }, user);
     carregar();
   }
 
   async function toggle(id) {
-    await apiCall(`/api/livros/${id}/toggle`, { method: "PATCH" });
+    await apiCall(`/api/livros/${id}/toggle`, { method: "PATCH" }, user);
     carregar();
   }
 
-  const total = livros.length;
-  const disponiveis = livros.filter(l => l.disponivel).length;
+  const lista = Array.isArray(livros) ? livros : [];
+  const total = lista.length;
+  const disponiveis = lista.filter(l => l.disponivel).length;
   const nome = user?.email?.split("@")[0];
 
   return (
@@ -828,7 +968,7 @@ function MeusLivrosPage({ user, navigate, setFlash }) {
         </div>
       ) : (
         <div className="books-grid">
-          {livros.map((book, i) => (
+          {lista.map((book, i) => (
             <div
               className={`book-card ${!book.disponivel ? "paused" : ""}`}
               key={book.id}
@@ -866,8 +1006,237 @@ function MeusLivrosPage({ user, navigate, setFlash }) {
   );
 }
 
+// ─── Explorar Livros Page ─────────────────────────────────────────────────────
+function ExplorarPage({ user, setFlash }) {
+  const [livros, setLivros]         = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [busca, setBusca]           = useState("");
+  const [categoria, setCategoria]   = useState("");
+  const [condicao, setCondicao]     = useState("");
+  // Mantém o estado de "enviado" por book id para feedback imediato na UI
+  const [enviados, setEnviados]     = useState({});
+  const [enviando, setEnviando]     = useState({});
+  /** mailto pré-preenchido por livro, após interesse (ou interesse duplicado). */
+  const [mailtoByBookId, setMailtoByBookId] = useState({});
+
+  const categorias = [
+    "Ciências Exatas e Tecnologia", "Ciências Biológicas e Saúde",
+    "Ciências Humanas", "Ciências Sociais Aplicadas", "Direito",
+    "Linguagens e Artes", "Didático / Vestibular",
+    "Ficção Científica", "Fantasia / Aventura", "Romance",
+    "Terror / Suspense", "Literatura Brasileira", "Literatura Internacional",
+    "Auto-ajuda / Desenvolvimento Pessoal", "Biografia / Memórias",
+    "História / Política", "Filosofia", "Outro",
+  ];
+
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (busca)     params.set("busca", busca);
+      if (categoria) params.set("categoria", categoria);
+      if (condicao)  params.set("condicao", condicao);
+
+      const res = await apiCall(`/api/livros-disponiveis?${params.toString()}`, {}, user);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setLivros(Array.isArray(data) ? data : []);
+    } catch {
+      setFlash({ msg: "Erro ao carregar livros disponíveis.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }, [busca, categoria, condicao, setFlash, user]);
+
+  // Debounce leve na busca por texto
+  useEffect(() => {
+    const t = setTimeout(() => { carregar(); }, busca ? 400 : 0);
+    return () => clearTimeout(t);
+  }, [carregar, busca]);
+
+  async function demonstrarInteresse(bookId) {
+    setEnviando(prev => ({ ...prev, [bookId]: true }));
+    try {
+      const res = await apiCall(`/api/livros-interesse/${bookId}`, { method: "POST" }, user);
+      const data = await res.json();
+      const mailto = data.mailto_owner;
+      if (mailto) {
+        setMailtoByBookId(prev => ({ ...prev, [bookId]: mailto }));
+      }
+      if (res.ok) {
+        setEnviados(prev => ({ ...prev, [bookId]: true }));
+        const link = { linkHref: mailto, linkLabel: "Abrir e-mail ao dono" };
+        if (data.email_sent) {
+          setFlash({
+            msg: "Interesse guardado. E-mail automático enviado ao dono (peça para verificar o spam).",
+            type: "success",
+            ...link,
+          });
+        } else {
+          setFlash({
+            msg:
+              "Interesse guardado na plataforma. O e-mail automático não foi enviado (SMTP não configurado no servidor). " +
+              "Use o botão para abrir o seu programa de e-mail e contactar o dono.",
+            type: "warning",
+            ...link,
+          });
+        }
+      } else if (res.status === 409) {
+        if (data.already_interested) {
+          setEnviados(prev => ({ ...prev, [bookId]: true }));
+          setFlash({
+            msg: `${data.error || "Interesse já registado."} Pode escrever ao dono pelo botão abaixo.`,
+            type: "warning",
+            linkHref: mailto,
+            linkLabel: "Abrir e-mail ao dono",
+          });
+        } else {
+          setFlash({ msg: data.error || "Não foi possível registar o interesse.", type: "error" });
+        }
+      } else {
+        setFlash({ msg: data.error || "Erro ao enviar interesse.", type: "error" });
+      }
+    } catch {
+      setFlash({ msg: "Erro de conexão ao enviar interesse.", type: "error" });
+    } finally {
+      setEnviando(prev => ({ ...prev, [bookId]: false }));
+    }
+  }
+
+  function limparFiltros() {
+    setBusca("");
+    setCategoria("");
+    setCondicao("");
+  }
+
+  const temFiltros = busca || categoria || condicao;
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <p className="page-eyebrow">Comunidade</p>
+          <h1 className="page-title">Explorar Livros</h1>
+          <p className="page-sub">Encontre livros disponíveis para troca de outros usuários</p>
+        </div>
+      </div>
+
+      {/* Barra de filtros */}
+      <div className="filtros-bar">
+        <input
+          type="text"
+          placeholder="🔍  Buscar por título ou autor…"
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+        />
+        <select value={categoria} onChange={e => setCategoria(e.target.value)}>
+          <option value="">Todas as categorias</option>
+          {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select value={condicao} onChange={e => setCondicao(e.target.value)}>
+          <option value="">Qualquer condição</option>
+          {["Novo", "Ótimo", "Bom", "Regular"].map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        {temFiltros && (
+          <button className="btn-filtro-clear" onClick={limparFiltros}>
+            Limpar filtros ×
+          </button>
+        )}
+      </div>
+
+      {!loading && (
+        <div className="stats-bar">
+          <div className="stat-item avail">
+            <strong>{livros.length}</strong> livro{livros.length !== 1 ? "s" : ""} disponíve{livros.length !== 1 ? "is" : "l"}
+          </div>
+          {temFiltros && (
+            <>
+              <div className="stat-sep">·</div>
+              <div className="stat-item">filtros ativos</div>
+            </>
+          )}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="loading">
+          <div className="spinner" /> Buscando livros…
+        </div>
+      ) : livros.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">🔭</div>
+          <h2>{temFiltros ? "Nenhum resultado" : "Nenhum livro disponível"}</h2>
+          <p>
+            {temFiltros
+              ? "Tente outros filtros ou limpe a busca para ver todos os livros."
+              : "Quando outros usuários cadastrarem livros, eles aparecerão aqui."}
+          </p>
+          {temFiltros && (
+            <button className="btn-primary" onClick={limparFiltros}>
+              Ver todos os livros
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="books-grid">
+          {livros.map((book, i) => {
+            const jaEnviou  = !!enviados[book.id];
+            const carregando = !!enviando[book.id];
+            return (
+              <div
+                className="book-card"
+                key={book.id}
+                style={{ animationDelay: `${i * 0.04}s` }}
+              >
+                <div className="book-stripe" />
+                <div className="book-body">
+                  <div className="book-meta">
+                    {book.categoria && <span className="badge cat">{book.categoria}</span>}
+                    <span className="badge on">Disponível</span>
+                  </div>
+                  <div className="book-title">{book.title}</div>
+                  <div className="book-author">{book.author}</div>
+                  {book.isbn && <div className="book-isbn">ISBN {book.isbn}</div>}
+                  {book.condicao && (
+                    <span className={`badge ${condClass(book.condicao)}`}>{book.condicao}</span>
+                  )}
+                  {book.descricao && <div className="book-desc">{book.descricao}</div>}
+                  <div className="book-owner">
+                    👤 <strong>{book.owner_name}</strong>
+                    {book.owner_curso && <span>· {book.owner_curso}</span>}
+                  </div>
+                </div>
+                <div className="book-actions book-actions-stack">
+                  <button
+                    className={`btn-card interesse${jaEnviou ? " enviado" : ""}`}
+                    disabled={jaEnviou || carregando}
+                    onClick={() => demonstrarInteresse(book.id)}
+                  >
+                    {carregando
+                      ? "Enviando…"
+                      : jaEnviou
+                      ? "✓ Interesse registado"
+                      : "🤝 Tenho interesse"}
+                  </button>
+                  {jaEnviou && mailtoByBookId[book.id] ? (
+                    <a className="btn-card mailto" href={mailtoByBookId[book.id]}>
+                      ✉ Contactar dono por e-mail
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Cadastrar Livro Page ─────────────────────────────────────────────────────
-function CadastrarLivroPage({ navigate, setFlash }) {
+function CadastrarLivroPage({ user, navigate, setFlash }) {
   const [loading, setLoading] = useState(false);
   const [condicao, setCondicao] = useState("");
 
@@ -876,10 +1245,11 @@ function CadastrarLivroPage({ navigate, setFlash }) {
     setLoading(true);
     const data = Object.fromEntries(new FormData(e.target));
     try {
-      const res = await apiCall("/api/livros", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      const res = await apiCall(
+        "/api/livros",
+        { method: "POST", body: JSON.stringify(data) },
+        user
+      );
       if (res.ok) {
         setFlash({ msg: "Livro cadastrado com sucesso!", type: "success" });
         navigate("meus-livros");
@@ -987,6 +1357,104 @@ function CadastrarLivroPage({ navigate, setFlash }) {
   );
 }
 
+// ─── Interesses recebidos (dono dos livros) ───────────────────────────────────
+function mailtoReplyInteressado(email, nome, bookTitle) {
+  const subject = encodeURIComponent(`UniLivro — ${bookTitle}`);
+  const body = encodeURIComponent(`Olá, ${nome},\n\n`);
+  return `mailto:${email}?subject=${subject}&body=${body}`;
+}
+
+function InteressesRecebidosPage({ user, navigate, setFlash }) {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiCall("/api/interesses-recebidos", {}, user);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setRows([]);
+        setFlash({
+          msg: (data && data.error) || "Não foi possível carregar os interesses (confirme se criou a tabela book_interests na base de dados).",
+          type: "error",
+        });
+        return;
+      }
+      setRows(Array.isArray(data) ? data : []);
+    } catch {
+      setRows([]);
+      setFlash({ msg: "Erro de rede ao carregar interesses.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }, [setFlash, user]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <p className="page-eyebrow">Notificações</p>
+          <h1 className="page-title">Interesses nos meus livros</h1>
+          <p className="page-sub">Quem clicou em «Tenho interesse» nos seus livros disponíveis</p>
+        </div>
+        <button type="button" className="btn-ghost" onClick={() => navigate("meus-livros")}>← Voltar</button>
+      </div>
+
+      {loading ? (
+        <div className="loading">
+          <div className="spinner" /> Carregando…
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">📬</div>
+          <h2>Ainda sem interesses</h2>
+          <p>Quando alguém registar interesse num dos seus livros no Explorar, aparece aqui com e-mail para responder.</p>
+          <button type="button" className="btn-primary" onClick={() => navigate("explorar")}>
+            Ir a Explorar
+          </button>
+        </div>
+      ) : (
+        <div className="interesses-table-wrap">
+          <table className="interesses-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Livro</th>
+                <th>Interessado</th>
+                <th>E-mail</th>
+                <th>Responder</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(r => (
+                <tr key={r.interest_id}>
+                  <td>{r.created_at ? new Date(r.created_at).toLocaleString("pt-BR") : "—"}</td>
+                  <td>
+                    <strong>{r.book_title}</strong>
+                    {r.book_author ? <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{r.book_author}</div> : null}
+                  </td>
+                  <td>{r.interested_name}</td>
+                  <td>
+                    <a href={`mailto:${r.interested_email}`}>{r.interested_email}</a>
+                  </td>
+                  <td>
+                    <a href={mailtoReplyInteressado(r.interested_email, r.interested_name, r.book_title)}>
+                      Abrir e-mail
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [page, setPage] = useState("loading");
@@ -1027,14 +1495,24 @@ export default function App() {
   return (
     <>
       <style>{styles}</style>
-      {!isPublic && <Navbar user={user} navigate={navigate} />}
+      {!isPublic && <Navbar user={user} navigate={navigate} page={page} />}
       {flash && (
-        <Flash msg={flash.msg} type={flash.type} onClose={() => setFlash(null)} />
+        <Flash
+          msg={flash.msg}
+          type={flash.type}
+          linkHref={flash.linkHref}
+          linkLabel={flash.linkLabel}
+          onClose={() => setFlash(null)}
+        />
       )}
       {page === "login"           && <LoginPage navigate={navigate} setFlash={setFlash} />}
       {page === "cadastro"        && <CadastroPage navigate={navigate} setFlash={setFlash} />}
       {page === "meus-livros"     && <MeusLivrosPage user={user} navigate={navigate} setFlash={setFlash} />}
-      {page === "cadastrar-livro" && <CadastrarLivroPage navigate={navigate} setFlash={setFlash} />}
+      {page === "explorar"             && <ExplorarPage user={user} setFlash={setFlash} />}
+      {page === "interesses-recebidos" && (
+        <InteressesRecebidosPage user={user} navigate={navigate} setFlash={setFlash} />
+      )}
+      {page === "cadastrar-livro" && <CadastrarLivroPage user={user} navigate={navigate} setFlash={setFlash} />}
     </>
   );
 }

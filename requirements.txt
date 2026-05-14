@@ -1,6 +1,7 @@
 flask==3.0.3
 firebase-admin==6.5.0
+Flask
 gunicorn
 psycopg2-binary
+firebase-admin
 python-dotenv
-flask-cors
