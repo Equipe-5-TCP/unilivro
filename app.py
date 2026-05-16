@@ -243,7 +243,7 @@ def listar_livros():
     return jsonify(livros)
 
 
-@app.route('/api/livros-disponiveis', methods=['GET'])
+@app.route('/api/livros/disponiveis', methods=['GET'])
 @firebase_login_required
 def listar_livros_disponiveis():
     """
