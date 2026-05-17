@@ -535,4 +535,4 @@ def demonstrar_interesse(id):
 if __name__ == "__main__":
     # Mesma prioridade que `flask run`: FLASK_RUN_PORT, depois FLASK_PORT, depois 5050.
     port = int(os.getenv("FLASK_RUN_PORT") or os.getenv("FLASK_PORT") or "5050")
-    app.run(debug=True, port=port)
+    app.run(debug=False, port=port)
