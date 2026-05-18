@@ -4,10 +4,9 @@ Aplicativo web para troca de livros entre estudantes universitários, permitindo
 
 ## Tecnologias
 - **Backend:** Python + Flask
-- **Banco de dados:** Firebase Firestore
+- **Banco de dados:** Supabase
 - **Autenticação:** Firebase Authentication (JWT)
-- **Frontend:** HTML, CSS e JavaScript
-- **Integração:** Firebase SDK (client + admin)
+- **Frontend:** React Native
 
 ## Funcionalidades
 
@@ -18,28 +17,17 @@ Aplicativo web para troca de livros entre estudantes universitários, permitindo
 - Pausar / reativar disponibilidade
 - Remoção de livros
 - Associação de livros ao usuário (UID)
+- Demonstração de interesse em livros de outros usuários
 
 ```
 
 ## Telas disponíveis
 
-unilivro/
-│
-├── app.py                  # Backend Flask + rotas API
-├── firebase_config.py      # Configuração Firebase Admin
-├── requirements.txt
-├── .gitignore
-│
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── auth.js         # Integração com Firebase Auth + API
-│
-├── templates/
-│   ├── base.html
-│   ├── login.html
-│   ├── cadastro.html
-│   ├── cadastrar_livro.html
-│   └── meus_livros.html
+- Login
+- Cadastro de novos usuários
+- Acervo pessoal
+- Cadastro de novos livros
+- Acervo compartilhado
+- Interesses em meus livros
+
 ```
